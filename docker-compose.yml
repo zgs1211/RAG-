@@ -1,0 +1,63 @@
+﻿version: "3.8"
+
+services:
+  rag-api:
+    build: .
+    container_name: rag-knowledge-qa
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    environment:
+      - VECTOR_DB_TYPE=chroma
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped
+
+  # 生产环境可启用 Milvus
+  # etcd:
+  #   image: quay.io/coreos/etcd:v3.5.5
+  #   environment:
+  #     - ETCD_AUTO_COMPACTION_MODE=revision
+  #     - ETCD_AUTO_COMPACTION_RETENTION=1000
+  #     - ETCD_QUOTA_BACKEND_BYTES=4294967296
+  #   volumes:
+  #     - etcd_data:/etcd
+
+  # minio:
+  #   image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+  #   environment:
+  #     - MINIO_ROOT_USER=minioadmin
+  #     - MINIO_ROOT_PASSWORD=minioadmin
+  #   volumes:
+  #     - minio_data:/minio_data
+  #   command: minio server /minio_data
+
+  # milvus:
+  #   image: milvusdb/milvus:v2.3.3
+  #   command: ["milvus", "run", "standalone"]
+  #   environment:
+  #     - ETCD_ENDPOINTS=etcd:2379
+  #     - MINIO_ADDRESS=minio:9000
+  #   volumes:
+  #     - milvus_data:/var/lib/milvus
+  #   ports:
+  #     - "19530:19530"
+  #   depends_on:
+  #     - etcd
+  #     - minio
+
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  # milvus_data:
+  # etcd_data:
+  # minio_data:
